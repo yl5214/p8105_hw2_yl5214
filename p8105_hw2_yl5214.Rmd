@@ -41,6 +41,12 @@ gwynnda_df$year = as.character(gwynnda_df$year)
 
 ```
 
+Gwynnda in July of 2021
+```{r}
+total_cig =filter(gwynnda_df, year =='2021', month =='July')
+```
+
+
 Combine these with the Mr. Trash Wheel dataset to produce a single tidy dataset
 ```{r}
 combine_df =
@@ -49,7 +55,7 @@ combine_df =
 relocate(trash_wheel)
 ```
 
-There are `r nrow(combine_df)`rows and `r ncol(combine_df)`columns in the merged dataset. The key variables are `r names(combine_df)`. The total weight of trash collected by Professor Trash Wheel is `r sum(professor_trash_df$ weight_tons)` The total number of cigarette butts collected by Gwynnda in July of 2021 is 
+There are `r nrow(combine_df)`rows and `r ncol(combine_df)`columns in the merged dataset. The key variables are `r names(combine_df)`. The total weight of trash collected by Professor Trash Wheel is `r sum(professor_trash_df$ weight_tons)` The total number of cigarette butts collected by Gwynnda in July of 2021 is `r sum(total_cig$cigarette_butts)`
 
 
 
