@@ -6,6 +6,7 @@ output: github_document
 
 ```{r}
 library(tidyverse)
+library(readxl)
 ```
 
 ### Question 1
@@ -71,38 +72,39 @@ There are `r nrow(merge)` observations  and `r ncol(merge)` variables in this me
 ## Read and clean the Mr. Trash Wheel sheet
 ```{r}
 Mr_trash_df =
-  readxl::read_excel('data/202309 Trash Wheel Collection Data.xlsx', sheet = 1, range = "A2:N586") |> 
+  read_excel('data/202309 Trash Wheel Collection Data.xlsx', sheet = 1, range = "A2:N586") |> 
+  janitor::clean_names() |> 
   mutate( trash_wheel= 'Mr_trash_wheel') |> 
- janitor::clean_names() |> 
+  mutate( year= as.double(year)) |> 
   drop_na (dumpster) |> 
   mutate(
     homes_powered = weight_tons*500/30
     ) 
-Mr_trash_df$year = as.character(Mr_trash_df$year)
 ```
 
 
 ## Import, clean, and organize the data for Professor Trash Wheel and Gwynnda
 ```{r}
 professor_trash_df =
-  readxl::read_excel('data/202309 Trash Wheel Collection Data.xlsx', sheet = 2, range = "A2:M108") |> 
-  mutate( trash_wheel= 'professor_trash_wheel') |> 
- janitor::clean_names() |>
+  read_excel('data/202309 Trash Wheel Collection Data.xlsx', sheet = 2, range = "A2:M108") |> 
+  janitor::clean_names() |>
+  mutate( trash_wheel= 'professor_trash_wheel') |>
+   mutate( year= as.double(year))|>
   drop_na (dumpster) |> 
   mutate(
     homes_powered = weight_tons*500/30
   )
-professor_trash_df$year = as.character(professor_trash_df$year)
 
 gwynnda_df =
   readxl::read_excel('data/202309 Trash Wheel Collection Data.xlsx', sheet = 4, range = "A2:L157", na ="") |>
+  janitor::clean_names() |>
   mutate( trash_wheel= 'gwynnda_trash_wheel') |>
+  mutate( year= as.double(year))|>
  janitor::clean_names() |> 
   drop_na (dumpster) |> 
   mutate(
     homes_powered = weight_tons*500/30
   ) 
-gwynnda_df$year = as.character(gwynnda_df$year)
 
 ```
 
@@ -121,7 +123,7 @@ relocate(trash_wheel)
 ```
 
 ## Description
-There are `r nrow(combine_df)` observations  and `r ncol(combine_df)` variables and tells us about the different types of trash in what dumspter and trash wheel and the corresponding weight, volumn for a given date. This dataset also contains homes_powered, which estimates the number of homes that could be powered from the energy saved by the trash collection.The key variables are `r names(combine_df)`. The total weight of trash collected by Professor Trash Wheel is `r sum(professor_trash_df$ weight_tons)` The total number of cigarette butts collected by Gwynnda in July of 2021 is `r sum(total_cig$cigarette_butts)`
+There are `r nrow(combine_df)` observations  and `r ncol(combine_df)` variables and tells us about the different types of trash in what dumspter and trash wheel and the corresponding weight, volumn for a given date. This dataset also contains homes_powered, which estimates the number of homes that could be powered from the energy saved by the trash collection.The key variables are `r names(combine_df)`. The total weight of trash collected by Professor Trash Wheel is `r sum(pull(professor_trash_df(weight_tons))` The total number of cigarette butts collected by Gwynnda in July of 2021 is `r sum(pull (total_cig(cigarette_butts))`
 
 ## Question 3
 
