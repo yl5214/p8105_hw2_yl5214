@@ -10,7 +10,7 @@ library(tidyverse)
 Question 2
 ```{r}
 trash_df =
-  readxl::read_excel('data/202309 Trash Wheel Collection Data.xlsx', range = "A2:N586" ) |> 
+  readxl::read_excel('data/202309 Trash Wheel Collection Data.xlsx', sheet = 1, range = "A2:N586" ) |> 
  janitor::clean_names() |> 
   select(-month, -year) |> 
   mutate(
