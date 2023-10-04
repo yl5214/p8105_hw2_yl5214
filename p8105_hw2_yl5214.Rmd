@@ -1,11 +1,75 @@
 ---
 title: "p8105_hw2_yl5214"
+author: "Yi Li"
 output: github_document
 ---
 
 ```{r}
 library(tidyverse)
 ```
+
+### Problem 1
+
+```{r clean_538_pols}
+month_df = 
+  tibble(
+    month_num = 1:12,
+    month_abb = month.abb,
+    month = month.name
+  )
+
+pols = 
+  read_csv("data/fivethirtyeight_datasets/pols-month.csv") |>
+  separate(mon, into = c("year", "month_num", "day"), convert = TRUE) |>
+  mutate(
+    president = recode(prez_gop, "0" = "dem", "1" = "gop", "2" = "gop")) |>
+  left_join(x = _, y = month_df) |> 
+  select(year, month, everything(), -day, -starts_with("prez")) 
+```
+
+We also clean the 538 `snp` data, which contains information related to Standard & Poor’s stock market index.
+
+```{r clean_538_snp}
+snp = 
+  read_csv(
+    "data/fivethirtyeight_datasets/snp.csv",
+    col_types = cols(date = col_date(format = "%m/%d/%y"))) |>
+  separate(date, into = c("year", "month_num", "day"), convert = TRUE) |>
+  mutate(
+    year = if_else(year > 2023, year - 100, year)) |> 
+  left_join(x = _, y = month_df) |> 
+  select(year, month, close) 
+```
+
+Finally, we tidy the `unemployment` data so that it can be merged with the `pols` and `snp` datasets.
+
+```{r clean_538_unemp}
+unemployment = 
+  read_csv("data/fivethirtyeight_datasets/unemployment.csv") |>
+  rename(year = Year) |>
+  pivot_longer(
+    Jan:Dec, 
+    names_to = "month_abb",
+    values_to = "unemployment"
+  ) |> 
+  left_join(x = _, y = month_df) |> 
+  select(year, month, unemployment)
+```
+
+Now we merge the three datasets!
+
+```{r merge_538}
+data_538 = 
+  left_join(pols, snp) |>
+  left_join(x = _, y = unemployment)
+
+str(data_538)
+```
+
+Notice that there are some `NA` values in the `close` and `unemployment` variables, which indicate that the value of these variables is missing at those locations.
+
+Let's talk about the 538 datasets. The `pols` data has `r nrow(pols)` observations and `r ncol(pols)` variables and tells us about the party affiliation distribution (democrat or republican) for governors and senators for a given year from years `r pols |> pull(year) |> min()` to `r pols |> pull(year) |> max()`. It also tells us whether the sitting president was a democrat or republican. The `snp` data has `r nrow(snp)` observations and `r ncol(snp)` variables, ranging from years `r snp |> pull(year) |> min()` to `r snp |> pull(year) |> max()`. The `unemployment` data has `r nrow(unemployment)` observations and `r ncol(unemployment)` variables ranging from years `r unemployment |> pull(year) |> min()` to `r unemployment |> pull(year) |> max()`. In Januarys in or after 1975 in which a democrat was president, the **average unemployment rate was `r filter(data_538, month == "January", year >= 1975, president == "dem") |> pull(unemployment) |> mean() |> round(2)`**.  The average unemployment rate over the same time period in which a republican was president was `r filter(data_538, month == "January", year >= 1975, president == "gop") |> pull(unemployment) |> mean() |> round(2)`.
+
 
 ## Question 2
 ## Read and clean the Mr. Trash Wheel sheet
@@ -61,7 +125,7 @@ relocate(trash_wheel)
 ```
 
 ## Description
-There are `r nrow(combine_df)` rows and `r ncol(combine_df)` columns in the merged dataset. The key variables are `r names(combine_df)`. The total weight of trash collected by Professor Trash Wheel is `r sum(professor_trash_df$ weight_tons)` The total number of cigarette butts collected by Gwynnda in July of 2021 is `r sum(total_cig$cigarette_butts)`
+There are `r nrow(combine_df)` observations in the merged dataset. The key variables are `r names(combine_df)`. The total weight of trash collected by Professor Trash Wheel is `r sum(professor_trash_df$ weight_tons)` The total number of cigarette butts collected by Gwynnda in July of 2021 is `r sum(total_cig$cigarette_butts)`
 
 ## Question 3
 
@@ -92,7 +156,7 @@ mci_baseline=
 ```
 
 ##Discuss important steps in the import process and relevant features of the dataset.
-First, I delete a row at the top of the dataset because the first row does not contain the variable names for each column. Then, I remove the participants who do not meet the stated inclusion criteria by filtering current age less than the age at onset or the age at onset is ".". Then, I change the sex status from 1, 0 to male, female by using the mutate statement. Also, I change the apoe4 carrier status from 1, 0 to APOE4 carrier, APOE4 non-carrier by using mutate statement.
+First, I delete a row at the top of the dataset because the first row does not contain the variable names for each column. Then, I remove the participants who do not meet the stated inclusion criteria by filtering current age less than the age at onset or the age at onset is ".". Then, I change the sex status from 1, 0 to male, female by using the mutate statement. Also, I change the apoe4 carrier status from 1, 0 to APOE4 carrier, APOE4 non-carrier by using mutate statement. There are `r nrow(mci_baseline)` observations in the merged dataset. The key variables are `r names(mci_baseline)`.
 
 ##How many participants were recruited, and of these how many develop MCI?
 Those who develop MCI
@@ -115,10 +179,11 @@ mci_amyloid=
   read_csv("data/mci_amyloid.csv", 
            skip= 1)|> 
   janitor:: clean_names() |> 
+  rename(id = study_id) |> 
   pivot_longer(
    baseline: time_8,
    names_to ='time',
-   values_to = 'number',
+   values_to = 'value',
    names_prefix ='time_'
    )|>
      mutate(
@@ -127,8 +192,39 @@ mci_amyloid=
 
 ```
 
-##Comment on the steps on the import process and the features of the dataset
+## amyloid data without pivot_longer
+```{r}
+mci_amyloid1=
+  read_csv("data/mci_amyloid.csv", 
+           skip= 1)|> 
+  janitor:: clean_names() |> 
+  rename(id = study_id)
+```
 
+## Comment on the steps on the import process and the features of the dataset
+First, I delete a row at the top of the dataset because the first row does not contain the variable names for each column. Then, I rename study_id by id because I want to keep this unique id same to the baseline dataset. Then, I use pivote_longer statement to melt data frames from a wide format into a long format. Also, I delete the prefix of time_ and change the 'baseline' to 0 to make the dataset tidier and cleaner. There are `r nrow(mci_amyloid)` observations in the merged dataset. The key variables are `r names(mci_amyloid)`.
+
+## Combine the demographic and biomarker datasets so that only participants who appear in both datasets are retained
+```{r}
+mci_merge =
+  inner_join(mci_amyloid1, mci_baseline, by = 'id')
+```
+
+##Describe the resulting dataset
+There are `r nrow(mci_merge)` observations in the merged dataset. The key variables are `r names(mci_merge)`.
+
+## Combine the demographic and biomarker datasets ，all the participants are retained
+```{r}
+mci_combine=
+  full_join(mci_amyloid1, mci_baseline, by ='id')
+```
+## Check whether some participants appear in only the baseline or amyloid datasets
+`r nrow(mci_combine)-nrow(mci_baseline) ` participants appears in only the amyloid dataset and not in baseline dataset.
+
+`r nrow(mci_combine)-nrow(mci_amyloid1) ` participants appears in only the baseline dataset and not in amyloid dataset.
+
+## Export the result as a CSV to your data directory
+write.csv(mci_merge, "data/mci_merge.csv")
 
 
 
