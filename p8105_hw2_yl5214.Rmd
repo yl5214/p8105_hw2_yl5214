@@ -95,6 +95,7 @@ mci_baseline1=
   read_csv("data/MCI_baseline.csv", 
            skip= 1)|> 
   janitor:: clean_names() |> 
+  filter (mci_baseline1, current_age < age_at_onset ) |> 
     mutate(
        sex = case_match(
          sex,
