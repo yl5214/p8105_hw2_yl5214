@@ -70,7 +70,7 @@ mci_baseline=
   read_csv("data/MCI_baseline.csv", 
            skip= 1)|> 
   janitor:: clean_names() |> 
-  filter(age_at_onset != "." ) |> 
+  filter(age_at_onset != '.' & current_age < age_at_onset) |> 
     mutate(
        sex = case_match(
          sex,
@@ -95,7 +95,6 @@ mci_baseline1=
   read_csv("data/MCI_baseline.csv", 
            skip= 1)|> 
   janitor:: clean_names() |> 
-  filter (mci_baseline1, current_age < age_at_onset ) |> 
     mutate(
        sex = case_match(
          sex,
@@ -116,11 +115,13 @@ Discuss important steps in the import process and relevant features of the datas
 
 ##How many participants were recruited, and of these how many develop MCI?
 `r nrow(mci_baseline1)` participants were recruited, and of these `r nrow(mci_baseline)` develop MCI.
-The average baseline age is `r mean(mci_baseline$age_at_onset)` 
+##What is the average baseline age? 
+The average baseline age is `r mean(mci_baseline$current_age)` 
 ## What proportion of women in the study are APOE4 carriers?
 ```{r}
+a1= filter (mci_baseline1, current_age < age_at_onset| age_at_onset == "." )
 proportion=
-  sum(mci_baseline1$sex == "female" & mci_baseline$ apoe4 == "APOE4 carrier") / sum(mci_baseline1$sex == "female")
+  sum(a1$sex == "female" & a1$ apoe4 == "APOE4 carrier") / sum(a1$sex == "female")
 ```
 `r proportion` women in the study are APOE4 carriers.
 
