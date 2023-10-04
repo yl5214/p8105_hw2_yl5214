@@ -17,14 +17,7 @@ Mr_trash_df =
   select(-month, -year) |> 
   mutate(
     homes_powered = weight_tons*500/30
-  ) |> 
-  pivot_longer(
-    plastic_bottles:sports_balls,
-    names_to  = 'trash',
-    values_to = 'number'
-  ) |> 
-  relocate(dumpster, date, trash, number)
-
+    )
 ```
 Import, clean, and organize the data for Professor Trash Wheel and Gwynnda
 ```{r}
@@ -35,13 +28,7 @@ professor_trash_df =
   select(-month, -year) |> 
   mutate(
     homes_powered = weight_tons*500/30
-  ) |> 
-   pivot_longer(
-    plastic_bottles:wrappers,
-    names_to  = 'trash',
-    values_to = 'number'
-  ) |> 
-  relocate(dumpster, date, trash, number)
+  )
 
 gwynnda_df =
   readxl::read_excel('data/202309 Trash Wheel Collection Data.xlsx', sheet = 4, range = "A2:L157" ) |>
@@ -50,13 +37,7 @@ gwynnda_df =
   select(-month, -year) |> 
   mutate(
     homes_powered = weight_tons*500/30
-  )|> 
-   pivot_longer(
-    plastic_bottles:wrappers,
-    names_to  = 'trash',
-    values_to = 'number'
-  ) |> 
-  relocate(dumpster, date, trash, number)
+  )
 
 ```
 
@@ -67,6 +48,8 @@ combine_df =
   janitor::clean_names() |> 
 relocate(trash_wheel)
 ```
+
+There are `r nrow(combine_df)`rows and `r ncol(combine_df)`columns in the merged dataset. The key variables are trash_wheel. dumpster, date, weight_tons, volumne_cubic_yards different types of trash with numbers and homes_powered. The total weight of trash collected by Professor Trash Wheel is `r sum(professor_trash_df$ weight_tons)` What was the total number of cigarette butts collected by Gwynnda in July of 2021?
 
 
 
