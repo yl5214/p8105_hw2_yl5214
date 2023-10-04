@@ -64,6 +64,7 @@ relocate(trash_wheel)
 There are `r nrow(combine_df)` rows and `r ncol(combine_df)` columns in the merged dataset. The key variables are `r names(combine_df)`. The total weight of trash collected by Professor Trash Wheel is `r sum(professor_trash_df$ weight_tons)` The total number of cigarette butts collected by Gwynnda in July of 2021 is `r sum(total_cig$cigarette_butts)`
 
 ## Question 3
+## Import, clean, and tidy the dataset of baseline demographics
 ```{r}
 mci_baseline=
   read_csv("data/MCI_baseline.csv", 
@@ -83,8 +84,43 @@ mci_baseline=
         0 ~ " APOE4 non-carrier",
         1 ~ "APOE4 carrier" 
         ) 
-)
+) 
+  mci_baseline$age_at_onset = as.numeric(mci_baseline$age_at_onset)
+  
 ```
+
+## Number of participants recruited in original dataset
+```{r}
+mci_baseline1=
+  read_csv("data/MCI_baseline.csv", 
+           skip= 1)|> 
+  janitor:: clean_names() |> 
+    mutate(
+       sex = case_match(
+         sex,
+        0 ~ "female",
+        1 ~ "male"
+        )
+) |> 
+       mutate(
+        apoe4 =case_match(
+          apoe4,
+        0 ~ " APOE4 non-carrier",
+        1 ~ "APOE4 carrier" 
+        ) 
+) 
+```
+
+Discuss important steps in the import process and relevant features of the dataset.
+##How many participants were recruited, and of these how many develop MCI?
+`r nrow(mci_baseline1)` participants were recruited, and of these `r nrow(mci_baseline)` develop MCI.
+The average baseline age is `r mean(mci_baseline$age_at_onset)` 
+## What proportion of women in the study are APOE4 carriers?
+```{r}
+proportion=
+  sum(mci_baseline1$sex == "female" & mci_baseline$ apoe4 == "APOE4 carrier") / sum(mci_baseline1$sex == "female")
+```
+`r proportion` women in the study are APOE4 carriers.
 
 
 
