@@ -11,9 +11,10 @@ library(tidyverse)
 ## Read and clean the Mr. Trash Wheel sheet
 ```{r}
 Mr_trash_df =
-  readxl::read_excel('data/202309 Trash Wheel Collection Data.xlsx', sheet = 1, range = "A2:N586" ) |> 
+  readxl::read_excel('data/202309 Trash Wheel Collection Data.xlsx', sheet = 1, range = "A2:N586") |> 
   mutate( trash_wheel= 'Mr_trash_wheel') |> 
  janitor::clean_names() |> 
+  drop_na (dumpster) |> 
   mutate(
     homes_powered = weight_tons*500/30
     ) 
@@ -24,18 +25,20 @@ Mr_trash_df$year = as.character(Mr_trash_df$year)
 ## Import, clean, and organize the data for Professor Trash Wheel and Gwynnda
 ```{r}
 professor_trash_df =
-  readxl::read_excel('data/202309 Trash Wheel Collection Data.xlsx', sheet = 2, range = "A2:M108" ) |> 
+  readxl::read_excel('data/202309 Trash Wheel Collection Data.xlsx', sheet = 2, range = "A2:M108") |> 
   mutate( trash_wheel= 'professor_trash_wheel') |> 
- janitor::clean_names() |> 
+ janitor::clean_names() |>
+  drop_na (dumpster) |> 
   mutate(
     homes_powered = weight_tons*500/30
   )
 professor_trash_df$year = as.character(professor_trash_df$year)
 
 gwynnda_df =
-  readxl::read_excel('data/202309 Trash Wheel Collection Data.xlsx', sheet = 4, range = "A2:L157" ) |>
+  readxl::read_excel('data/202309 Trash Wheel Collection Data.xlsx', sheet = 4, range = "A2:L157", na ="") |>
   mutate( trash_wheel= 'gwynnda_trash_wheel') |>
  janitor::clean_names() |> 
+  drop_na (dumpster) |> 
   mutate(
     homes_powered = weight_tons*500/30
   ) 
@@ -60,6 +63,28 @@ relocate(trash_wheel)
 ## Description
 There are `r nrow(combine_df)` rows and `r ncol(combine_df)` columns in the merged dataset. The key variables are `r names(combine_df)`. The total weight of trash collected by Professor Trash Wheel is `r sum(professor_trash_df$ weight_tons)` The total number of cigarette butts collected by Gwynnda in July of 2021 is `r sum(total_cig$cigarette_butts)`
 
+## Question 3
+```{r}
+mci_baseline=
+  read_csv("data/MCI_baseline.csv", 
+           skip= 1)|> 
+  janitor:: clean_names() |> 
+  filter(age_at_onset != "." ) |> 
+    mutate(
+       sex = case_match(
+         sex,
+        0 ~ "female",
+        1 ~ "male"
+        )
+) |> 
+       mutate(
+        apoe4 =case_match(
+          apoe4,
+        0 ~ " APOE4 non-carrier",
+        1 ~ "APOE4 carrier" 
+        ) 
+)
+```
 
 
 
