@@ -123,7 +123,7 @@ relocate(trash_wheel)
 ```
 
 ## Description
-There are `r nrow(combine_df)` observations  and `r ncol(combine_df)` variables and tells us about the different types of trash in what dumspter and trash wheel and the corresponding weight, volumn for a given date. This dataset also contains homes_powered, which estimates the number of homes that could be powered from the energy saved by the trash collection.The key variables are `r names(combine_df)`. The total weight of trash collected by Professor Trash Wheel is `r sum(pull(professor_trash_df(weight_tons))` The total number of cigarette butts collected by Gwynnda in July of 2021 is `r sum(pull (total_cig(cigarette_butts))`
+There are `r nrow(combine_df)` observations  and `r ncol(combine_df)` variables and tells us about the different types of trash in what dumspter and trash wheel and the corresponding weight, volume for a given date. This dataset also contains homes_powered, which estimates the number of homes that could be powered from the energy saved by the trash collection.The key variables are `r names(combine_df)`. The total weight of trash collected by Professor Trash Wheel is `r sum(pull(professor_trash_df, weight_tons))` The total number of cigarette butts collected by Gwynnda in July of 2021 is `r sum(pull(total_cig,cigarette_butts))`
 
 ## Question 3
 
@@ -163,11 +163,11 @@ baseline2= filter(mci_baseline, age_at_onset != '.')
 ```
 `r nrow(mci_baseline)` participants were recruited, and of these `r nrow(baseline2)` develop MCI.
 ##What is the average baseline age? 
-The average baseline age is `r mean(mci_baseline$current_age)` 
+The average baseline age is `r mean(pull(mci_baseline,current_age))` 
 ## What proportion of women in the study are APOE4 carriers?
 ```{r}
 proportion=
-  sum(mci_baseline$sex == "female" & mci_baseline$ apoe4 == "APOE4 carrier") / sum(mci_baseline$sex == "female")
+ nrow(filter(mci_baseline, sex =='female' & apoe4 == 'APOE4 carrier'))/nrow(filter(mci_baseline, sex == 'female'))
 ```
 `r proportion` women in the study are APOE4 carriers.
 
@@ -202,7 +202,7 @@ mci_amyloid1=
 ## Comment on the steps on the import process and the features of the dataset
 First, I delete a row at the top of the dataset because the first row does not contain the variable names for each column. Then, I rename study_id by id because I want to keep this unique id same to the baseline dataset. Then, I use pivote_longer statement to melt data frames from a wide format into a long format. Also, I delete the prefix of time_ and change the 'baseline' to 0 to make the dataset tidier and cleaner. There are `r nrow(mci_amyloid)` observations and `r ncol(mci_amyloid)` variables and tells us about the amyloid value in each visit time for each specific patient.
 
-## Combine the demographic and biomarker datasets so that only participants who appear in both datasets are retained
+## Combine the demographic and biomarker datasets so that only participants who appear in both datasets are retained （without 'pivot_longer')
 ```{r}
 mci_merge =
   inner_join(mci_amyloid1, mci_baseline, by = 'id')
@@ -210,6 +210,14 @@ mci_merge =
 
 ##Describe the resulting dataset
 There are `r nrow(mci_merge)` observations and `r ncol(mci_merge)` variables and tells us not only about the patient information, but also the amyloid value for everytime the patient follows up. The key variables are `r names(mci_merge)`.
+
+## Combine the demographic and biomarker datasets so that only participants who appear in both datasets are retained (with 'pivot_longer')
+```{r}
+mci_merge2 =
+  inner_join(mci_amyloid, mci_baseline, by = 'id')
+```
+##Describe the resulting dataset
+There are `r nrow(mci_merge2)` observations and `r ncol(mci_merge2)` variables and tells us not only about the patient information, but also the amyloid value for everytime the patient follows up. The key variables are `r names(mci_merge2)`.
 
 ## Combine the demographic and biomarker datasets ，all the participants are retained
 ```{r}
